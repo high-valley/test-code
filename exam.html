@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS クラウドプラクティショナー 模擬試験</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Noto+Sans+JP:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --aws-orange: #FF9900;
+    --aws-dark: #232F3E;
+    --aws-blue: #1A73E8;
+    --bg: #0D1117;
+    --surface: #161B22;
+    --surface2: #21262D;
+    --border: #30363D;
+    --text: #E6EDF3;
+    --text-muted: #8B949E;
+    --correct: #3FB950;
+    --wrong: #F85149;
+    --accent: #FF9900;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--aws-dark);
+    border-bottom: 2px solid var(--aws-orange);
+    padding: 0 24px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--aws-orange);
+    letter-spacing: 0.1em;
+  }
+
+  .header-sep { color: var(--border); font-size: 20px; }
+
+  .header-title {
+    font-size: 13px;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+  }
+
+  .timer-badge {
+    margin-left: auto;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--aws-orange);
+    background: rgba(255,153,0,0.1);
+    border: 1px solid rgba(255,153,0,0.3);
+    padding: 4px 12px;
+    border-radius: 6px;
+    min-width: 70px;
+    text-align: center;
+    transition: color 0.3s;
+  }
+  .timer-badge.warning { color: var(--wrong); border-color: rgba(248,81,73,0.4); background: rgba(248,81,73,0.1); }
+
+  /* ── SCREENS ── */
+  .screen { display: none; }
+  .screen.active { display: flex; flex-direction: column; align-items: center; }
+
+  /* ── START SCREEN ── */
+  #startScreen {
+    min-height: calc(100vh - 56px);
+    justify-content: center;
+    padding: 40px 20px;
+  }
+
+  .start-card {
+    max-width: 640px;
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 48px 40px;
+    text-align: center;
+  }
+
+  .exam-badge {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--aws-orange);
+    border: 1px solid var(--aws-orange);
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 24px;
+  }
+
+  .start-card h1 {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: 12px;
+  }
+
+  .start-card p {
+    color: var(--text-muted);
+    font-size: 14px;
+    line-height: 1.8;
+    margin-bottom: 32px;
+  }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 36px;
+  }
+
+  .info-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    text-align: left;
+  }
+
+  .info-item .label {
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    margin-bottom: 4px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .info-item .value {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--aws-orange);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .btn-primary {
+    background: var(--aws-orange);
+    color: #000;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    border: none;
+    padding: 14px 48px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.05em;
+  }
+  .btn-primary:hover { background: #FFB84D; transform: translateY(-1px); box-shadow: 0 4px 20px rgba(255,153,0,0.3); }
+  .btn-primary:active { transform: translateY(0); }
+
+  /* ── EXAM SCREEN ── */
+  #examScreen {
+    padding: 32px 20px 80px;
+    min-height: calc(100vh - 56px);
+  }
+
+  .exam-layout {
+    max-width: 860px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .progress-bar-wrap {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-bottom: 32px;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--aws-orange);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  .q-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .q-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+  }
+
+  .q-domain {
+    font-size: 11px;
+    background: rgba(255,153,0,0.1);
+    border: 1px solid rgba(255,153,0,0.25);
+    color: var(--aws-orange);
+    padding: 2px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.05em;
+  }
+
+  .q-text {
+    font-size: 17px;
+    font-weight: 400;
+    line-height: 1.75;
+    margin-bottom: 28px;
+    color: var(--text);
+  }
+
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+
+  .option {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    transition: all 0.15s;
+    font-size: 15px;
+    line-height: 1.6;
+    text-align: left;
+    color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif;
+  }
+
+  .option:hover:not(.disabled) {
+    border-color: var(--aws-orange);
+    background: rgba(255,153,0,0.05);
+  }
+
+  .option.selected { border-color: var(--aws-orange); background: rgba(255,153,0,0.08); }
+  .option.correct  { border-color: var(--correct); background: rgba(63,185,80,0.08); }
+  .option.wrong    { border-color: var(--wrong); background: rgba(248,81,73,0.08); }
+  .option.disabled { cursor: default; }
+
+  .opt-key {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--aws-orange);
+    min-width: 22px;
+    padding-top: 1px;
+  }
+
+  .option.correct .opt-key { color: var(--correct); }
+  .option.wrong   .opt-key { color: var(--wrong); }
+
+  .explanation {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--aws-orange);
+    border-radius: 8px;
+    padding: 20px 24px;
+    font-size: 14px;
+    line-height: 1.8;
+    color: var(--text-muted);
+    margin-bottom: 28px;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .explanation strong { color: var(--text); }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  .nav-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .btn-next {
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 12px 28px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-left: auto;
+  }
+  .btn-next:hover { border-color: var(--aws-orange); color: var(--aws-orange); }
+  .btn-next.finish { background: var(--aws-orange); color: #000; border-color: var(--aws-orange); }
+  .btn-next.finish:hover { background: #FFB84D; }
+
+  .q-counter {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  /* ── RESULT SCREEN ── */
+  #resultScreen {
+    min-height: calc(100vh - 56px);
+    justify-content: center;
+    padding: 40px 20px;
+  }
+
+  .result-card {
+    max-width: 680px;
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 48px 40px;
+    text-align: center;
+  }
+
+  .score-ring {
+    width: 140px;
+    height: 140px;
+    margin: 0 auto 28px;
+    position: relative;
+  }
+
+  .score-ring svg { transform: rotate(-90deg); }
+
+  .score-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .score-pct {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 32px;
+    font-weight: 600;
+    color: var(--aws-orange);
+    line-height: 1;
+  }
+
+  .score-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    margin-top: 4px;
+  }
+
+  .pass-badge {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    padding: 6px 20px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+  }
+  .pass-badge.pass { background: rgba(63,185,80,0.15); color: var(--correct); border: 1px solid var(--correct); }
+  .pass-badge.fail { background: rgba(248,81,73,0.15); color: var(--wrong); border: 1px solid var(--wrong); }
+
+  .result-card h2 { font-size: 22px; margin-bottom: 8px; }
+  .result-card .sub { color: var(--text-muted); font-size: 14px; margin-bottom: 32px; }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 36px;
+  }
+
+  .stat-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 12px;
+  }
+
+  .stat-box .s-val {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .stat-box .s-lbl {
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.08em;
+  }
+
+  .stat-box.correct .s-val { color: var(--correct); }
+  .stat-box.wrong .s-val { color: var(--wrong); }
+  .stat-box.total .s-val { color: var(--aws-orange); }
+
+  .result-actions { display: flex; gap: 12px; justify-content: center; }
+
+  .btn-secondary {
+    background: transparent;
+    border: 1.5px solid var(--border);
+    color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 12px 28px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-secondary:hover { border-color: var(--text-muted); }
+
+  /* Review list */
+  .review-list {
+    max-width: 860px;
+    width: 100%;
+    margin-top: 40px;
+    text-align: left;
+  }
+
+  .review-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .review-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 10px;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  .review-item.r-correct { border-left: 3px solid var(--correct); }
+  .review-item.r-wrong   { border-left: 3px solid var(--wrong); }
+
+  .review-q { color: var(--text); margin-bottom: 8px; font-weight: 700; }
+  .review-a { font-size: 13px; }
+  .r-label { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.1em; }
+  .r-label.c { color: var(--correct); }
+  .r-label.w { color: var(--wrong); }
+
+</style>
+</head>
+<body>
+
+<header>
+  <span class="logo">AWS</span>
+  <span class="header-sep">|</span>
+  <span class="header-title">Cloud Practitioner — 模擬試験</span>
+  <div class="timer-badge" id="timerDisplay">90:00</div>
+</header>
+
+<!-- START -->
+<div class="screen active" id="startScreen">
+  <div class="start-card">
+    <div class="exam-badge">CLF-C02</div>
+    <h1>AWS クラウドプラクティショナー<br>模擬試験</h1>
+    <p>実際の試験と同じ難易度・形式で出題します。<br>合格ラインは 700点（70%） です。制限時間内に全問解答してください。</p>
+    <div class="info-grid">
+      <div class="info-item">
+        <div class="label">問題数</div>
+        <div class="value">30問</div>
+      </div>
+      <div class="info-item">
+        <div class="label">制限時間</div>
+        <div class="value">90分</div>
+      </div>
+      <div class="info-item">
+        <div class="label">合格ライン</div>
+        <div class="value">70%</div>
+      </div>
+      <div class="info-item">
+        <div class="label">試験形式</div>
+        <div class="value">単一選択</div>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="startExam()">試験を開始する</button>
+  </div>
+</div>
+
+<!-- EXAM -->
+<div class="screen" id="examScreen">
+  <div class="exam-layout">
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progressBar"></div>
+    </div>
+    <div class="q-meta">
+      <span class="q-num" id="qNum">Q01 / 30</span>
+      <span class="q-domain" id="qDomain"></span>
+    </div>
+    <div class="q-text" id="qText"></div>
+    <div class="options" id="optionsContainer"></div>
+    <div class="explanation" id="explanation" style="display:none"></div>
+    <div class="nav-row">
+      <span class="q-counter" id="qCounter"></span>
+      <button class="btn-next" id="btnNext" onclick="nextQuestion()" style="display:none">次の問題 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESULT -->
+<div class="screen" id="resultScreen">
+  <div class="result-card">
+    <div class="score-ring">
+      <svg width="140" height="140" viewBox="0 0 140 140">
+        <circle cx="70" cy="70" r="58" fill="none" stroke="#30363D" stroke-width="10"/>
+        <circle cx="70" cy="70" r="58" fill="none" stroke="#FF9900" stroke-width="10"
+          stroke-dasharray="364.4" stroke-dashoffset="364.4"
+          id="scoreCircle" stroke-linecap="round"/>
+      </svg>
+      <div class="score-center">
+        <div class="score-pct" id="scorePct">0%</div>
+        <div class="score-label">SCORE</div>
+      </div>
+    </div>
+    <div class="pass-badge" id="passBadge">PASS</div>
+    <h2 id="resultTitle"></h2>
+    <div class="sub" id="resultSub"></div>
+    <div class="stats-grid">
+      <div class="stat-box correct">
+        <div class="s-val" id="correctCount">0</div>
+        <div class="s-lbl">正解</div>
+      </div>
+      <div class="stat-box wrong">
+        <div class="s-val" id="wrongCount">0</div>
+        <div class="s-lbl">不正解</div>
+      </div>
+      <div class="stat-box total">
+        <div class="s-val">30</div>
+        <div class="s-lbl">合計問題数</div>
+      </div>
+    </div>
+    <div class="result-actions">
+      <button class="btn-secondary" onclick="showReview()">復習する</button>
+      <button class="btn-primary" onclick="restartExam()">もう一度受ける</button>
+    </div>
+  </div>
+  <div class="review-list" id="reviewList" style="display:none">
+    <div class="review-title">全問レビュー</div>
+    <div id="reviewItems"></div>
+  </div>
+</div>
+
+<script>
+const QUESTIONS = [
+  // ── ドメイン1: クラウドのコンセプト ──
+  {
+    domain: "クラウドのコンセプト",
+    text: "AWS クラウドの「俊敏性（アジリティ）」の利点として最も適切なものはどれですか？",
+    options: ["物理サーバーの購入コストを完全になくすことができる","新しいリソースをすぐにプロビジョニングして実験を迅速に行える","データセンターの物理的なセキュリティを向上できる","ハードウェアの保守管理から解放される"],
+    correct: 1,
+    explanation: "俊敏性とは、新しいITリソースをすぐに利用できるようにする能力を指します。クリック一つで数分以内にリソースを利用でき、実験や開発の速度を大幅に向上させます。コスト削減は「コスト最適化」、物理セキュリティは「セキュリティ」、保守管理からの解放は「運用上の優位性」に該当します。"
+  },
+  {
+    domain: "クラウドのコンセプト",
+    text: "「規模の経済」がAWSの料金優位性につながる理由として正しいものはどれですか？",
+    options: ["AWSが自社のインフラに多くの投資を行うから","多数のお客様が利用することでAWSの使用コストが下がり、その恩恵がユーザーに還元されるから","AWSが政府から補助金を受けているから","クラウドサービスに課税されないから"],
+    correct: 1,
+    explanation: "規模の経済（Economies of Scale）とは、大量のインフラを運用することでコストあたりの効率が向上する概念です。数百万のお客様が利用することで、AWSは運用コストを下げ、その結果より低い従量課金料金をユーザーに提供できます。"
+  },
+  {
+    domain: "クラウドのコンセプト",
+    text: "オンプレミス環境からクラウドへ移行することで解消される「設備投資（CapEx）」に代わるコストモデルはどれですか？",
+    options: ["固定費モデル","変動費（運用費）モデル（OpEx）","リースモデル","減価償却モデル"],
+    correct: 1,
+    explanation: "クラウドでは、大規模な先行投資（CapEx）が不要になり、使用した分だけ支払う運用費（OpEx）モデルに移行します。これにより、キャッシュフローが改善し、需要に応じた柔軟なコスト管理が可能になります。"
+  },
+  {
+    domain: "クラウドのコンセプト",
+    text: "AWSの「グローバルインフラストラクチャ」において、複数のアベイラビリティゾーン（AZ）を持つ理由として最も正確なものはどれですか？",
+    options: ["各AZに異なるAWSサービスを配置するため","1つのAZに障害が発生しても他のAZで稼働を継続できる高可用性を実現するため","各AZがコスト削減のために最適化されているため","規制上の理由でデータを分散保存するため"],
+    correct: 1,
+    explanation: "各AWSリージョンには複数の独立したアベイラビリティゾーン（データセンター群）があります。AZ間は高速の専用ネットワークで接続されており、1つのAZで災害や障害が発生しても、他のAZで業務を継続できます。これが「高可用性」と「フォールトトレランス」の基盤です。"
+  },
+  // ── ドメイン2: セキュリティとコンプライアンス ──
+  {
+    domain: "セキュリティとコンプライアンス",
+    text: "AWSの「責任共有モデル」において、お客様が責任を負うものはどれですか？",
+    options: ["物理データセンターのセキュリティ","ハイパーバイザーのパッチ適用","EC2インスタンスにインストールされたOSのパッチ適用","グローバルネットワークインフラの管理"],
+    correct: 2,
+    explanation: "責任共有モデルでは、AWSが「クラウドのセキュリティ」（物理インフラ、ハードウェア、マネージドサービス）を担い、お客様が「クラウド内のセキュリティ」を担います。EC2のOSパッチ適用、セキュリティグループの設定、データの暗号化などはお客様の責任です。"
+  },
+  {
+    domain: "セキュリティとコンプライアンス",
+    text: "AWS IAMのベストプラクティスとして最も重要なものはどれですか？",
+    options: ["全てのユーザーにAdministrator権限を付与する","ルートアカウントを日常的に使用する","最小権限の原則に従い、必要最小限の権限のみを付与する","パスワードを定期的に変更しない"],
+    correct: 2,
+    explanation: "「最小権限の原則（Principle of Least Privilege）」は IAM の最重要ベストプラクティスです。ユーザー、ロール、サービスに対して、業務に必要な最小限の権限のみを付与します。ルートアカウントの日常使用は厳禁で、MFAを有効化した上で緊急時のみ使用します。"
+  },
+  {
+    domain: "セキュリティとコンプライアンス",
+    text: "転送中のデータを保護するために使用される暗号化プロトコルはどれですか？",
+    options: ["AES-256","TLS/SSL","SHA-256","RSA"],
+    correct: 1,
+    explanation: "転送中のデータ（Data in Transit）は TLS（Transport Layer Security）/ SSL で保護します。AWS サービスはデフォルトで HTTPS（TLS）を使用します。一方、保存中のデータ（Data at Rest）は AES-256 などの対称暗号を使用して保護します。"
+  },
+  {
+    domain: "セキュリティとコンプライアンス",
+    text: "AWSのどのサービスがDDoS攻撃に対する保護を提供しますか？",
+    options: ["AWS WAF","AWS Shield","Amazon GuardDuty","AWS Config"],
+    correct: 1,
+    explanation: "AWS Shield は DDoS（分散型サービス拒否）攻撃から AWS リソースを保護するサービスです。Shield Standard はすべての AWS お客様に無料で提供され、一般的なDDoS攻撃を自動的に軽減します。Shield Advanced は高度な保護と DDoS コスト保護を提供します。"
+  },
+  {
+    domain: "セキュリティとコンプライアンス",
+    text: "AWS CloudTrail の主な用途はどれですか？",
+    options: ["アプリケーションのパフォーマンスを監視する","AWSアカウント内のAPI呼び出しを記録し、監査証跡を提供する","コスト配分タグを管理する","ネットワークトラフィックをフィルタリングする"],
+    correct: 1,
+    explanation: "AWS CloudTrail は AWS アカウント内で行われたすべての API 呼び出しを記録します。誰がいつ何の操作をしたかの監査証跡（Audit Trail）を提供し、セキュリティ分析、コンプライアンス確認、運用上のトラブルシューティングに使用されます。"
+  },
+  // ── ドメイン3: クラウドテクノロジーとサービス ──
+  {
+    domain: "クラウドテクノロジーとサービス",
+    text: "Amazon S3 のストレージクラスのうち、アクセス頻度が低く（年に数回）、取り出しに時間がかかっても良い長期アーカイブデータに最適なものはどれですか？",
+    options: ["S3 Standard","S3 Intelligent-Tiering","S3 Glacier Deep Archive","S3 One Zone-IA"],
+    correct: 2,
+    explanation: "S3 Glacier Deep Archive は AWS 最安値のストレージクラスで、年に1～2回しかアクセスしない長期アーカイブデータ向けです。データの取り出しには最大12時間かかります。コンプライアンス要件で7～10年間のデータ保持が必要な場合などに適しています。"
+  },
+  {
+    domain: "クラウドテクノロジーとサービス",
+    text: "Webアプリケーションの前段に配置し、トラフィックを複数のEC2インスタンスに分散させるAWSサービスはどれですか？",
+    options: ["Amazon CloudFront","Amazon Route 53","Elastic Load Balancing（ELB）","AWS Auto Scaling"],
+    correct: 2,
+    explanation: "Elastic Load Balancing（ELB）はトラフィックを複数のターゲット（EC2インスタンス、コンテナ、Lambda関数など）に自動的に分散します。可用性と耐障害性を向上させます。CloudFront は CDN、Route 53 は DNS サービス、Auto Scaling はインスタンス数の自動調整です。"
+  },
+  {
+    domain: "クラウドテクノロジーとサービス",
+    text: "サーバーのプロビジョニングや管理を一切行わずにコードを実行できるAWSのコンピューティングサービスはどれですか？",
+    options: ["Amazon EC2","Amazon ECS","AWS Lambda","Amazon Lightsail"],
+    correct: 2,
+    explanation: "AWS Lambda はサーバーレスコンピューティングサービスです。コードをアップロードするだけで、Lambda がインフラの管理を自動的に行います。イベント（S3へのファイルアップロード、APIコールなど）に応じてコードが実行され、実行時間に対してのみ課金されます。"
+  },
+  {
+    domain: "クラウドテクノロジーとサービス",
+    text: "Amazon RDS（Relational Database Service）がオンプレミスのデータベース運用と比較した場合の主なメリットはどれですか？",
+    options: ["あらゆるカスタムデータベースエンジンをサポートする","バックアップ、パッチ適用、フェイルオーバーなどの管理作業をAWSが代行する","データベースに無制限のストレージを提供する","完全無料で利用できる"],
+    correct: 1,
+    explanation: "Amazon RDS はマネージドリレーショナルデータベースサービスです。バックアップの自動化、ソフトウェアパッチ、マルチAZフェイルオーバー、スケーリングなどの面倒な管理作業を AWS が代行するため、開発者はアプリケーション開発に集中できます。"
+  },
+  {
+    domain: "クラウドテクノロジーとサービス",
+    text: "Amazon VPC（Virtual Private Cloud）の主な目的は何ですか？",
+    options: ["データを自動的にバックアップする","AWSクラウド内に論理的に分離されたプライベートネットワーク環境を作成する","アプリケーションのレイテンシーを削減する","コストを自動的に最適化する"],
+    correct: 1,
+    explanation: "Amazon VPC を使用すると、AWS クラウド内に論理的に分離した仮想ネットワーク環境を作成できます。IPアドレス範囲の選択、サブネットの作成、ルートテーブルやネットワークゲートウェイの設定など、ネットワーク環境を完全にコントロールできます。"
+  },
+  {
+    domain: "クラウドテクノロジーとサービス",
+    text: "コンテンツデリバリーネットワーク（CDN）として機能し、世界中のエンドユーザーへのコンテンツ配信を高速化するAWSサービスはどれですか？",
+    options: ["AWS Global Accelerator","Amazon CloudFront","Amazon Route 53","AWS Direct Connect"],
+    correct: 1,
+    explanation: "Amazon CloudFront は AWS のグローバル CDN サービスです。世界中に配置されたエッジロケーションを使用して、コンテンツをユーザーの近くにキャッシュし、レイテンシーを最小化してコンテンツを高速に配信します。動画ストリーミング、静的Webサイト、APIの高速化に使用されます。"
+  },
+  {
+    domain: "クラウドテクノロジーとサービス",
+    text: "Amazon EC2 の「リザーブドインスタンス」を選択すべき場面として最も適切なものはどれですか？",
+    options: ["不定期に数時間だけ使用するバッチジョブ","週末のみ必要な開発環境","1〜3年間にわたり安定した使用量が予測できるワークロード","突発的なトラフィック増加に対応するスポット的な処理"],
+    correct: 2,
+    explanation: "リザーブドインスタンスは1年または3年の期間コミットメントと引き換えに、オンデマンド料金と比較して最大72%の割引を提供します。予測可能で安定したワークロードに適しています。断続的または短期のワークロードはオンデマンド、中断可能な処理はスポットインスタンスが適しています。"
+  },
+  {
+    domain: "クラウドテクノロジーとサービス",
+    text: "AWS が提供するマネージドの NoSQL データベースサービスはどれですか？",
+    options: ["Amazon RDS","Amazon Redshift","Amazon DynamoDB","Amazon Aurora"],
+    correct: 2,
+    explanation: "Amazon DynamoDB はフルマネージドの NoSQL データベースサービスです。ミリ秒単位のレスポンスタイム、自動スケーリング、高可用性を提供します。ゲームのリーダーボード、IoTデータ、セッション管理など、大量の読み書きが必要なアプリケーションに適しています。"
+  },
+  {
+    domain: "クラウドテクノロジーとサービス",
+    text: "Amazon SQS（Simple Queue Service）の主な用途はどれですか？",
+    options: ["リアルタイムのビデオ配信","マイクロサービスや分散システム間のメッセージを非同期に分離・処理するキュー","リレーショナルデータの管理","Webアプリケーションのホスティング"],
+    correct: 1,
+    explanation: "Amazon SQS は完全マネージドのメッセージキューサービスです。コンポーネント間を非同期的に切り離し（疎結合化）、信頼性高くメッセージを配信します。プロデューサーとコンシューマーが独立してスケールでき、システムの耐障害性を向上させます。"
+  },
+  // ── ドメイン4: 請求、料金、サポート ──
+  {
+    domain: "請求、料金、サポート",
+    text: "AWS のコストを可視化・分析するために使用するサービスはどれですか？",
+    options: ["AWS Trusted Advisor","AWS Cost Explorer","AWS Budgets","AWS Config"],
+    correct: 1,
+    explanation: "AWS Cost Explorer は、AWSのコストと使用量を視覚化・分析するツールです。過去のコストトレンドを確認し、将来のコストを予測し、コスト削減の機会を特定できます。一方、AWS Budgets はアラートの設定、AWS Config はリソースの設定変更の追跡に使用します。"
+  },
+  {
+    domain: "請求、料金、サポート",
+    text: "複数のAWSアカウントをまとめて管理し、一括請求を受けることができるサービスはどれですか？",
+    options: ["AWS Control Tower","AWS Organizations","AWS Service Catalog","AWS Resource Groups"],
+    correct: 1,
+    explanation: "AWS Organizations を使用すると、複数のAWSアカウントを組織としてグループ化して一元管理できます。一括請求（Consolidated Billing）により、組織全体の使用量が合算され、ボリュームディスカウントの恩恵を受けられます。SCP（サービスコントロールポリシー）でアカウントを横断的に制御することも可能です。"
+  },
+  {
+    domain: "請求、料金、サポート",
+    text: "本番環境で24時間365日、1時間以内の応答時間でAWSのサポートを受けたい場合、最適なサポートプランはどれですか？",
+    options: ["Developer プラン","Business プラン","Basic プラン","Free プラン"],
+    correct: 1,
+    explanation: "AWS Business サポートプランは、24時間365日の電話・チャット・メールサポート、クリティカルな問題に対して1時間以内の応答時間、AWS Trusted Advisor のフルチェック機能を提供します。本番環境を持つ企業に推奨されます。Enterprise プランはさらに上位の対応（15分以内の応答）を提供します。"
+  },
+  {
+    domain: "請求、料金、サポート",
+    text: "AWS のどのツールが、セキュリティ、コスト最適化、パフォーマンス、サービス制限などのベストプラクティスを自動チェックしますか？",
+    options: ["Amazon Inspector","AWS Config","AWS Trusted Advisor","AWS CloudWatch"],
+    correct: 2,
+    explanation: "AWS Trusted Advisor は、AWS のベストプラクティスに基づいてリソースを自動的にチェックするサービスです。コスト最適化、セキュリティ、フォールトトレランス、パフォーマンス、サービスクォータの5つのカテゴリで推奨事項を提供します。Basic / Developer プランでは一部のチェックのみ利用可能です。"
+  },
+  {
+    domain: "請求、料金、サポート",
+    text: "AWSの料金を決定する主な要素として「正しくないもの」はどれですか？",
+    options: ["コンピューティングリソースの使用量","データ転送量（アウトバウンド）","ストレージ容量","AWSサポートチームのサイズ"],
+    correct: 3,
+    explanation: "AWSの料金は主に、(1) コンピューティング（EC2インスタンスの稼働時間など）、(2) ストレージ（S3、EBSなど）、(3) データ転送（アウトバウンド転送量）の3要素で決まります。AWSサポートチームのサイズは料金に関係ありません。また、インバウンドデータ転送は基本的に無料です。"
+  },
+  // ── 応用問題 ──
+  {
+    domain: "クラウドのコンセプト",
+    text: "「高可用性（High Availability）」を実現するAWSのアーキテクチャとして正しいものはどれですか？",
+    options: ["1つのリージョンの1つのAZにリソースを集中させる","複数のAZにリソースを分散配置し、ロードバランサーで振り分ける","最も安いEC2インスタンスタイプを選択する","すべてのデータをS3に保存する"],
+    correct: 1,
+    explanation: "高可用性とは、システムが継続的に稼働できるよう設計することです。複数のアベイラビリティゾーン（AZ）にリソースを分散し、Elastic Load Balancing でトラフィックを振り分けることで、1つのAZで障害が発生しても他のAZでサービスを継続できます。これが AWS の「マルチAZ」アーキテクチャです。"
+  },
+  {
+    domain: "セキュリティとコンプライアンス",
+    text: "AWS IAMロールをEC2インスタンスに割り当てる利点として最も正しいものはどれですか？",
+    options: ["インスタンスの処理速度が向上する","アクセスキーをインスタンス内に保存せずに、AWSサービスへの安全なアクセスが可能になる","インスタンスのコストが削減される","インスタンスのネットワーク帯域幅が増加する"],
+    correct: 1,
+    explanation: "EC2 インスタンスに IAM ロールを割り当てることで、アクセスキーやシークレットキーをコードやファイルに埋め込む必要がなくなります。AWS が一時的な認証情報を自動的にローテーションして提供するため、認証情報の漏洩リスクを大幅に低減できます。これはセキュリティのベストプラクティスです。"
+  },
+  {
+    domain: "クラウドテクノロジーとサービス",
+    text: "Amazon EC2 Auto Scaling の主な目的として正しいものはどれですか？",
+    options: ["EC2 インスタンスのスナップショットを自動的に作成する","トラフィックの増減に応じてEC2インスタンスの数を自動的に増減し、コストと可用性を最適化する","EC2インスタンスのOSパッチを自動的に適用する","複数のリージョンにデータを自動的にレプリケートする"],
+    correct: 1,
+    explanation: "Amazon EC2 Auto Scaling は、定義したポリシーに基づいて EC2 インスタンスの数を自動的にスケールアウト（増加）またはスケールイン（削減）します。需要の増加時に自動的にキャパシティを追加し、需要が落ち着いたら不要なインスタンスを削除することで、コスト効率と可用性を同時に実現します。"
+  },
+  {
+    domain: "クラウドテクノロジーとサービス",
+    text: "AWS Well-Architected Framework の6つの柱に含まれないものはどれですか？",
+    options: ["セキュリティ","コスト最適化","プロプライエタリ技術の活用","信頼性"],
+    correct: 2,
+    explanation: "AWS Well-Architected Framework の6つの柱は、①運用上の優位性、②セキュリティ、③信頼性、④パフォーマンス効率、⑤コスト最適化、⑥持続可能性です。「プロプライエタリ技術の活用」は Well-Architected Framework の柱には含まれません。"
+  },
+  {
+    domain: "クラウドテクノロジーとサービス",
+    text: "AWS Artifact の主な用途はどれですか？",
+    options: ["ソフトウェアの成果物（アーティファクト）を管理する","AWSのセキュリティおよびコンプライアンスレポートや規制文書へのアクセスを提供する","CI/CDパイプラインを構築する","コンテナイメージを保存する"],
+    correct: 1,
+    explanation: "AWS Artifact はオンデマンドでコンプライアンス文書へのアクセスを提供するポータルです。SOC レポート、PCI レポート、ISO 認定証など、AWS のセキュリティおよびコンプライアンスレポートをダウンロードできます。監査対応やコンプライアンス確認に活用されます。"
+  },
+  {
+    domain: "クラウドテクノロジーとサービス",
+    text: "Amazon Route 53 の機能として正しくないものはどれですか？",
+    options: ["DNSルーティング","ドメイン名の登録","ヘルスチェックによるトラフィックのフェイルオーバー","アプリケーションのソースコード管理"],
+    correct: 3,
+    explanation: "Amazon Route 53 は高可用性でスケーラブルなDNSウェブサービスです。ドメイン名の登録、DNS ルーティング（レイテンシーベース、地理的、加重ルーティングなど）、ヘルスチェックとフェイルオーバーを提供します。ソースコード管理は AWS CodeCommit や GitHub などのサービスが担当します。"
+  },
+  {
+    domain: "請求、料金、サポート",
+    text: "AWS Pricing Calculator の用途として正しいものはどれですか？",
+    options: ["実際に発生しているAWSコストをリアルタイムで表示する","AWSサービスを利用する前に、概算コストを事前に見積もる","AWSリソースの使用量の上限を設定する","過去の請求明細を確認する"],
+    correct: 1,
+    explanation: "AWS Pricing Calculator（旧 Simple Monthly Calculator）は、AWS サービスを実際に使用する前に、月額の概算コストを見積もるためのツールです。アーキテクチャを構成して事前にコストを計算し、予算計画に活用できます。実際のコスト確認は Cost Explorer、アラート設定は Budgets を使用します。"
+  }
+];
+
+let currentQ = 0;
+let userAnswers = [];
+let timerInterval = null;
+let timeLeft = 90 * 60; // 90 minutes
+
+function startExam() {
+  document.getElementById('startScreen').classList.remove('active');
+  document.getElementById('examScreen').classList.add('active');
+  renderQuestion();
+  startTimer();
+}
+
+function startTimer() {
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    updateTimerDisplay();
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      finishExam();
+    }
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+  const s = (timeLeft % 60).toString().padStart(2, '0');
+  const el = document.getElementById('timerDisplay');
+  el.textContent = `${m}:${s}`;
+  el.classList.toggle('warning', timeLeft < 300);
+}
+
+function renderQuestion() {
+  const q = QUESTIONS[currentQ];
+  const total = QUESTIONS.length;
+
+  document.getElementById('progressBar').style.width = `${(currentQ / total) * 100}%`;
+  document.getElementById('qNum').textContent = `Q${String(currentQ+1).padStart(2,'0')} / ${total}`;
+  document.getElementById('qDomain').textContent = q.domain;
+  document.getElementById('qText').textContent = q.text;
+  document.getElementById('explanation').style.display = 'none';
+  document.getElementById('btnNext').style.display = 'none';
+  document.getElementById('qCounter').textContent = `回答済み: ${userAnswers.filter(a=>a!==undefined).length} / ${total}`;
+
+  const keys = ['A', 'B', 'C', 'D'];
+  const container = document.getElementById('optionsContainer');
+  container.innerHTML = '';
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option';
+    btn.innerHTML = `<span class="opt-key">${keys[i]}</span><span>${opt}</span>`;
+    btn.onclick = () => selectAnswer(i);
+    container.appendChild(btn);
+  });
+
+  const isFinish = currentQ === total - 1;
+  document.getElementById('btnNext').textContent = isFinish ? '結果を見る' : '次の問題 →';
+  document.getElementById('btnNext').className = isFinish ? 'btn-next finish' : 'btn-next';
+}
+
+function selectAnswer(idx) {
+  const q = QUESTIONS[currentQ];
+  const options = document.querySelectorAll('.option');
+
+  options.forEach(o => {
+    o.classList.add('disabled');
+    o.onclick = null;
+  });
+
+  options[idx].classList.add(idx === q.correct ? 'correct' : 'wrong');
+  if (idx !== q.correct) options[q.correct].classList.add('correct');
+
+  userAnswers[currentQ] = idx;
+
+  const expEl = document.getElementById('explanation');
+  expEl.innerHTML = `<strong>💡 解説：</strong> ${q.explanation}`;
+  expEl.style.display = 'block';
+  document.getElementById('btnNext').style.display = 'block';
+  document.getElementById('qCounter').textContent = `回答済み: ${userAnswers.filter(a=>a!==undefined).length} / ${QUESTIONS.length}`;
+}
+
+function nextQuestion() {
+  if (currentQ < QUESTIONS.length - 1) {
+    currentQ++;
+    renderQuestion();
+  } else {
+    finishExam();
+  }
+}
+
+function finishExam() {
+  clearInterval(timerInterval);
+  document.getElementById('examScreen').classList.remove('active');
+  document.getElementById('resultScreen').classList.add('active');
+
+  const correct = userAnswers.filter((a, i) => a === QUESTIONS[i].correct).length;
+  const total = QUESTIONS.length;
+  const pct = Math.round((correct / total) * 100);
+  const pass = pct >= 70;
+
+  // Ring animation
+  const circumference = 2 * Math.PI * 58; // 364.4
+  const offset = circumference - (pct / 100) * circumference;
+  setTimeout(() => {
+    document.getElementById('scoreCircle').style.transition = 'stroke-dashoffset 1.2s ease';
+    document.getElementById('scoreCircle').style.strokeDashoffset = offset;
+  }, 100);
+
+  document.getElementById('scorePct').textContent = `${pct}%`;
+  document.getElementById('correctCount').textContent = correct;
+  document.getElementById('wrongCount').textContent = total - correct;
+
+  const badge = document.getElementById('passBadge');
+  badge.textContent = pass ? '✓ PASS' : '✗ FAIL';
+  badge.className = `pass-badge ${pass ? 'pass' : 'fail'}`;
+
+  document.getElementById('resultTitle').textContent = pass ? '合格おめでとうございます！🎉' : '惜しい！再挑戦しましょう';
+  document.getElementById('resultSub').textContent = pass
+    ? `スコア ${pct}% で合格ラインの70%を超えました。本番試験も頑張ってください！`
+    : `スコア ${pct}% — あと ${70 - pct}% で合格です。解説を確認して苦手分野を克服しましょう。`;
+}
+
+function showReview() {
+  const list = document.getElementById('reviewList');
+  list.style.display = 'block';
+  const keys = ['A', 'B', 'C', 'D'];
+  const container = document.getElementById('reviewItems');
+  container.innerHTML = '';
+
+  QUESTIONS.forEach((q, i) => {
+    const ua = userAnswers[i];
+    const isCorrect = ua === q.correct;
+    const div = document.createElement('div');
+    div.className = `review-item ${isCorrect ? 'r-correct' : 'r-wrong'}`;
+    div.innerHTML = `
+      <div class="review-q">Q${i+1}. ${q.text}</div>
+      <div class="review-a">
+        <span class="r-label ${isCorrect ? 'c' : 'w'}">${isCorrect ? '✓ 正解' : '✗ 不正解'}</span>
+        ${!isCorrect ? `　あなたの回答: <strong>${ua !== undefined ? keys[ua] : '未回答'}</strong>　正解: <strong>${keys[q.correct]}</strong>` : ''}
+        <br><small style="color:#8B949E">${q.explanation}</small>
+      </div>`;
+    container.appendChild(div);
+  });
+
+  list.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function restartExam() {
+  currentQ = 0;
+  userAnswers = [];
+  timeLeft = 90 * 60;
+  updateTimerDisplay();
+  document.getElementById('timerDisplay').classList.remove('warning');
+  document.getElementById('scoreCircle').style.transition = 'none';
+  document.getElementById('scoreCircle').style.strokeDashoffset = 364.4;
+  document.getElementById('reviewList').style.display = 'none';
+  document.getElementById('resultScreen').classList.remove('active');
+  document.getElementById('startScreen').classList.add('active');
+}
+</script>
+</body>
+</html>
