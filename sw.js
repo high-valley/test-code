@@ -1,4 +1,4 @@
-const CACHE_NAME = ‘aws-exam-v1’;
+const CACHE_NAME = ‘aws-exam-v2’;
 const ASSETS = [
 ‘./exam.html’,
 ‘./manifest.json’

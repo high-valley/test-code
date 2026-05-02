@@ -1313,23 +1313,29 @@ const ALL_QUESTIONS = [
 ];
 
 // 全問題プールから30問をランダムに選択
-const EXAM_SIZE = 30;
+var EXAM_SIZE = 30;
 function shuffle(arr) {
-  const a = arr.slice();
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
+  var a = arr.slice();
+  for (var i = a.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
   }
   return a;
 }
-let QUESTIONS = shuffle(ALL_QUESTIONS).slice(0, EXAM_SIZE);
+var QUESTIONS = shuffle(ALL_QUESTIONS).slice(0, EXAM_SIZE);
 
-let currentQ = 0;
-let userAnswers = [];
-let timerInterval = null;
-let timeLeft = 90 * 60; // 90 minutes
+var currentQ = 0;
+var userAnswers = [];
+var timerInterval = null;
+var timeLeft = 90 * 60; // 90 minutes
 
 function startExam() {
+  // 念のため再シャッフル（QUESTIONSが空の場合も対応）
+  QUESTIONS = shuffle(ALL_QUESTIONS).slice(0, EXAM_SIZE);
+  currentQ = 0;
+  userAnswers = [];
+  timeLeft = 90 * 60;
+  updateTimerDisplay();
   document.getElementById('startScreen').classList.remove('active');
   document.getElementById('examScreen').classList.add('active');
   renderQuestion();
