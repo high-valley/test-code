@@ -15,9 +15,26 @@
 <meta name="theme-color" content="#232F3E">
 <meta name="description" content="AWSクラウドプラクティショナー模擬試験。100問プールからランダム30問出題。">
 
-<!-- PWA: マニフェスト -->
+<!-- PWA: マニフェスト（インライン） -->
 
-<link rel="manifest" href="manifest.json">
+<script>
+(function(){
+  var manifest = {
+    name: "AWS クラウドプラクティショナー 模擬試験",
+    short_name: "AWS試験",
+    display: "standalone",
+    background_color: "#0D1117",
+    theme_color: "#232F3E",
+    start_url: "./"
+  };
+  var blob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
+  var url = URL.createObjectURL(blob);
+  var link = document.createElement('link');
+  link.rel = 'manifest';
+  link.href = url;
+  document.head.appendChild(link);
+})();
+</script>
 
 <!-- PWA: Appleアイコン（SVGインラインで生成） -->
 
@@ -1488,15 +1505,6 @@ function restartExam() {
   document.getElementById('reviewList').style.display = 'none';
   document.getElementById('resultScreen').classList.remove('active');
   document.getElementById('startScreen').classList.add('active');
-}
-<!-- PWA: Service Worker 登録 -->
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js')
-      .then(reg => console.log('SW registered:', reg.scope))
-      .catch(err => console.log('SW error:', err));
-  });
 }
 </script>
 
