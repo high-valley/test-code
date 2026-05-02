@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS クラウドプラクティショナー 模擬試験</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Noto+Sans+JP:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --aws-orange: #FF9900;
+    --aws-dark: #232F3E;
+    --aws-blue: #1A73E8;
+    --bg: #0D1117;
+    --surface: #161B22;
+    --surface2: #21262D;
+    --border: #30363D;
+    --text: #E6EDF3;
+    --text-muted: #8B949E;
+    --correct: #3FB950;
+    --wrong: #F85149;
+    --accent: #FF9900;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--aws-dark);
+    border-bottom: 2px solid var(--aws-orange);
+    padding: 0 24px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--aws-orange);
+    letter-spacing: 0.1em;
+  }
+
+  .header-sep { color: var(--border); font-size: 20px; }
+
+  .header-title {
+    font-size: 13px;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+  }
+
+  .timer-badge {
+    margin-left: auto;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--aws-orange);
+    background: rgba(255,153,0,0.1);
+    border: 1px solid rgba(255,153,0,0.3);
+    padding: 4px 12px;
+    border-radius: 6px;
+    min-width: 70px;
+    text-align: center;
+    transition: color 0.3s;
+  }
+  .timer-badge.warning { color: var(--wrong); border-color: rgba(248,81,73,0.4); background: rgba(248,81,73,0.1); }
+
+  /* ── SCREENS ── */
+  .screen { display: none; }
+  .screen.active { display: flex; flex-direction: column; align-items: center; }
+
+  /* ── START SCREEN ── */
+  #startScreen {
+    min-height: calc(100vh - 56px);
+    justify-content: center;
+    padding: 40px 20px;
+  }
+
+  .start-card {
+    max-width: 640px;
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 48px 40px;
+    text-align: center;
+  }
+
+  .exam-badge {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--aws-orange);
+    border: 1px solid var(--aws-orange);
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 24px;
+  }
+
+  .start-card h1 {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: 12px;
+  }
+
+  .start-card p {
+    color: var(--text-muted);
+    font-size: 14px;
+    line-height: 1.8;
+    margin-bottom: 32px;
+  }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 36px;
+  }
+
+  .info-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    text-align: left;
+  }
+
+  .info-item .label {
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    margin-bottom: 4px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .info-item .value {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--aws-orange);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .btn-primary {
+    background: var(--aws-orange);
+    color: #000;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    border: none;
+    padding: 14px 48px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.05em;
+  }
+  .btn-primary:hover { background: #FFB84D; transform: translateY(-1px); box-shadow: 0 4px 20px rgba(255,153,0,0.3); }
+  .btn-primary:active { transform: translateY(0); }
+
+  /* ── EXAM SCREEN ── */
+  #examScreen {
+    padding: 32px 20px 80px;
+    min-height: calc(100vh - 56px);
+  }
+
+  .exam-layout {
+    max-width: 860px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .progress-bar-wrap {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-bottom: 32px;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--aws-orange);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  .q-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .q-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+  }
+
+  .q-domain {
+    font-size: 11px;
+    background: rgba(255,153,0,0.1);
+    border: 1px solid rgba(255,153,0,0.25);
+    color: var(--aws-orange);
+    padding: 2px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.05em;
+  }
+
+  .q-text {
+    font-size: 17px;
+    font-weight: 400;
+    line-height: 1.75;
+    margin-bottom: 28px;
+    color: var(--text);
+  }
+
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+
+  .option {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    transition: all 0.15s;
+    font-size: 15px;
+    line-height: 1.6;
+    text-align: left;
+    color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif;
+  }
+
+  .option:hover:not(.disabled) {
+    border-color: var(--aws-orange);
+    background: rgba(255,153,0,0.05);
+  }
+
+  .option.selected { border-color: var(--aws-orange); background: rgba(255,153,0,0.08); }
+  .option.correct  { border-color: var(--correct); background: rgba(63,185,80,0.08); }
+  .option.wrong    { border-color: var(--wrong); background: rgba(248,81,73,0.08); }
+  .option.disabled { cursor: default; }
+
+  .opt-key {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--aws-orange);
+    min-width: 22px;
+    padding-top: 1px;
+  }
+
+  .option.correct .opt-key { color: var(--correct); }
+  .option.wrong   .opt-key { color: var(--wrong); }
+
+  .explanation {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--aws-orange);
+    border-radius: 8px;
+    padding: 20px 24px;
+    font-size: 14px;
+    line-height: 1.8;
+    color: var(--text-muted);
+    margin-bottom: 28px;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .explanation strong { color: var(--text); }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  .nav-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .btn-next {
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 12px 28px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-left: auto;
+  }
+  .btn-next:hover { border-color: var(--aws-orange); color: var(--aws-orange); }
+  .btn-next.finish { background: var(--aws-orange); color: #000; border-color: var(--aws-orange); }
+  .btn-next.finish:hover { background: #FFB84D; }
+
+  .q-counter {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  /* ── RESULT SCREEN ── */
+  #resultScreen {
+    min-height: calc(100vh - 56px);
+    justify-content: center;
+    padding: 40px 20px;
+  }
+
+  .result-card {
+    max-width: 680px;
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 48px 40px;
+    text-align: center;
+  }
+
+  .score-ring {
+    width: 140px;
+    height: 140px;
+    margin: 0 auto 28px;
+    position: relative;
+  }
+
+  .score-ring svg { transform: rotate(-90deg); }
+
+  .score-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .score-pct {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 32px;
+    font-weight: 600;
+    color: var(--aws-orange);
+    line-height: 1;
+  }
+
+  .score-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    margin-top: 4px;
+  }
+
+  .pass-badge {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    padding: 6px 20px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+  }
+  .pass-badge.pass { background: rgba(63,185,80,0.15); color: var(--correct); border: 1px solid var(--correct); }
+  .pass-badge.fail { background: rgba(248,81,73,0.15); color: var(--wrong); border: 1px solid var(--wrong); }
+
+  .result-card h2 { font-size: 22px; margin-bottom: 8px; }
+  .result-card .sub { color: var(--text-muted); font-size: 14px; margin-bottom: 32px; }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 36px;
+  }
+
+  .stat-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 12px;
+  }
+
+  .stat-box .s-val {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .stat-box .s-lbl {
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.08em;
+  }
+
+  .stat-box.correct .s-val { color: var(--correct); }
+  .stat-box.wrong .s-val { color: var(--wrong); }
+  .stat-box.total .s-val { color: var(--aws-orange); }
+
+  .result-actions { display: flex; gap: 12px; justify-content: center; }
+
+  .btn-secondary {
+    background: transparent;
+    border: 1.5px solid var(--border);
+    color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 12px 28px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-secondary:hover { border-color: var(--text-muted); }
+
+  /* Review list */
+  .review-list {
+    max-width: 860px;
+    width: 100%;
+    margin-top: 40px;
+    text-align: left;
+  }
+
+  .review-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .review-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 10px;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  .review-item.r-correct { border-left: 3px solid var(--correct); }
+  .review-item.r-wrong   { border-left: 3px solid var(--wrong); }
+
+  .review-q { color: var(--text); margin-bottom: 8px; font-weight: 700; }
+  .review-a { font-size: 13px; }
+  .r-label { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.1em; }
+  .r-label.c { color: var(--correct); }
+  .r-label.w { color: var(--wrong); }
+
+</style>
+</head>
+<body>
+
+<header>
+  <span class="logo">AWS</span>
+  <span class="header-sep">|</span>
+  <span class="header-title">Cloud Practitioner — 模擬試験</span>
+  <div class="timer-badge" id="timerDisplay">90:00</div>
+</header>
+
+<!-- START -->
+<div class="screen active" id="startScreen">
+  <div class="start-card">
+    <div class="exam-badge">CLF-C02</div>
+    <h1>AWS クラウドプラクティショナー<br>模擬試験</h1>
+    <p>実際の試験と同じ難易度・形式で出題します。<br>合格ラインは 700点（70%） です。制限時間内に全問解答してください。</p>
+    <div class="info-grid">
+      <div class="info-item">
+        <div class="label">問題数</div>
+        <div class="value">30問</div>
+      </div>
+      <div class="info-item">
+        <div class="label">制限時間</div>
+        <div class="value">90分</div>
+      </div>
+      <div class="info-item">
+        <div class="label">合格ライン</div>
+        <div class="value">70%</div>
+      </div>
+      <div class="info-item">
+        <div class="label">試験形式</div>
+        <div class="value">単一選択</div>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="startExam()">試験を開始する</button>
+  </div>
+</div>
+
+<!-- EXAM -->
+<div class="screen" id="examScreen">
+  <div class="exam-layout">
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progressBar"></div>
+    </div>
+    <div class="q-meta">
+      <span class="q-num" id="qNum">Q01 / 30</span>
+      <span class="q-domain" id="qDomain"></span>
+    </div>
+    <div class="q-text" id="qText"></div>
+    <div class="options" id="optionsContainer"></div>
+    <div class="explanation" id="explanation" style="display:none"></div>
+    <div class="nav-row">
+      <span class="q-counter" id="qCounter"></span>
+      <button class="btn-next" id="btnNext" onclick="nextQuestion()" style="display:none">次の問題 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESULT -->
+<div class="screen" id="resultScreen">
+  <div class="result-card">
+    <div class="score-ring">
+      <svg width="140" height="140" viewBox="0 0 140 140">
+        <circle cx="70" cy="70" r="58" fill="none" stroke="#30363D" stroke-width="10"/>
+        <circle cx="70" cy="70" r="58" fill="none" stroke="#FF9900" stroke-width="10"
+          stroke-dasharray="364.4" stroke-dashoffset="364.4"
+          id="scoreCircle" stroke-linecap="round"/>
+      </svg>
+      <div class="score-center">
+        <div class="score-pct" id="scorePct">0%</div>
+        <div class="score-label">SCORE</div>
+      </div>
+    </div>
+    <div class="pass-badge" id="passBadge">PASS</div>
+    <h2 id="resultTitle"></h2>
+    <div class="sub" id="resultSub"></div>
+    <div class="stats-grid">
+      <div class="stat-box correct">
+        <div class="s-val" id="correctCount">0</div>
+        <div class="s-lbl">正解</div>
+      </div>
+      <div class="stat-box wrong">
+        <div class="s-val" id="wrongCount">0</div>
+        <div class="s-lbl">不正解</div>
+      </div>
+      <div class="stat-box total">
+        <div class="s-val">30</div>
+        <div class="s-lbl">合計問題数</div>
+      </div>
+    </div>
+    <div class="result-actions">
+      <button class="btn-secondary" onclick="showReview()">復習する</button>
+      <button class="btn-primary" onclick="restartExam()">もう一度受ける</button>
+    </div>
+  </div>
+  <div class="review-list" id="reviewList" style="display:none">
+    <div class="review-title">全問レビュー</div>
+    <div id="reviewItems"></div>
+  </div>
+</div>
+
+<script>
+const TOTAL_QUESTIONS = 30;
+
+// ===== 元の問題（ここに200問入れる）=====
+const ALL_QUESTIONS = [
+  {
+    domain: "クラウドのコンセプト",
+    text: "AWSの俊敏性の利点はどれ？",
+    options: ["コスト削減","すぐにリソース作れる","物理管理不要","セキュリティ向上"],
+    correct: 1,
+    explanation: "すぐにリソースを作れることが俊敏性"
+  },
+  {
+    domain: "セキュリティ",
+    text: "IAMの基本原則は？",
+    options: ["全権限付与","最小権限","共有アカウント","パスワード不要"],
+    correct: 1,
+    explanation: "最小権限が原則"
+  }
+];
+
+// ===== ダミーで200問に増やす（テスト用）=====
+while (ALL_QUESTIONS.length < 200) {
+  ALL_QUESTIONS.push({
+    domain: "ダミー",
+    text: "ダミー問題 " + (ALL_QUESTIONS.length + 1),
+    options: ["A","B","C","D"],
+    correct: Math.floor(Math.random() * 4),
+    explanation: "これはダミー問題です"
+  });
+}
+
+// ===== ランダム抽出 =====
+function getRandomQuestions(arr, count) {
+  const shuffled = [...arr].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, count);
+}
+
+let QUESTIONS = [];
+let currentQ = 0;
+let userAnswers = [];
+let timerInterval = null;
+let timeLeft = 90 * 60;
+
+// ===== 試験開始 =====
+function startExam() {
+  QUESTIONS = getRandomQuestions(ALL_QUESTIONS, TOTAL_QUESTIONS);
+
+  currentQ = 0;
+  userAnswers = [];
+
+  document.getElementById('startScreen').classList.remove('active');
+  document.getElementById('examScreen').classList.add('active');
+
+  renderQuestion();
+  startTimer();
+}
+
+// ===== タイマー =====
+function startTimer() {
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    updateTimerDisplay();
+    if (timeLeft <= 0) finishExam();
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+  const s = (timeLeft % 60).toString().padStart(2, '0');
+  document.getElementById('timerDisplay').textContent = `${m}:${s}`;
+}
+
+// ===== 問題表示 =====
+function renderQuestion() {
+  const q = QUESTIONS[currentQ];
+  const total = QUESTIONS.length;
+
+  document.getElementById('qNum').textContent = `Q${currentQ+1} / ${total}`;
+  document.getElementById('qText').textContent = q.text;
+  document.getElementById('qDomain').textContent = q.domain;
+
+  const container = document.getElementById('optionsContainer');
+  container.innerHTML = '';
+
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option';
+    btn.textContent = opt;
+    btn.onclick = () => selectAnswer(i);
+    container.appendChild(btn);
+  });
+}
+
+// ===== 回答 =====
+function selectAnswer(idx) {
+  userAnswers[currentQ] = idx;
+  document.getElementById('btnNext').style.display = 'block';
+}
+
+// ===== 次へ =====
+function nextQuestion() {
+  if (currentQ < QUESTIONS.length - 1) {
+    currentQ++;
+    renderQuestion();
+  } else {
+    finishExam();
+  }
+}
+
+// ===== 結果 =====
+function finishExam() {
+  clearInterval(timerInterval);
+
+  const correct = userAnswers.filter((a, i) => a === QUESTIONS[i].correct).length;
+  const total = QUESTIONS.length;
+  const pct = Math.round((correct / total) * 100);
+
+  document.getElementById('scorePct').textContent = `${pct}%`;
+  document.getElementById('correctCount').textContent = correct;
+  document.getElementById('wrongCount').textContent = total - correct;
+  document.getElementById('totalCount').textContent = total;
+
+  document.getElementById('examScreen').classList.remove('active');
+  document.getElementById('resultScreen').classList.add('active');
+}
+</script>
+</body>
+</html>
